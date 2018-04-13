@@ -1,8 +1,9 @@
 {
     "name": "filepond-plugin-image-crop",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Image Crop Plugin for FilePond",
     "homepage": "https://pqina.nl/filepond",
+    "repository": "pqina/filepond-plugin-image-crop",
     "main": "dist/filepond-plugin-image-crop.js",
     "browser": "dist/filepond-plugin-image-crop.js",
     "module": "dist/filepond-plugin-image-crop.esm.js",
