@@ -1,5 +1,5 @@
 /*
- * FilePondPluginImageCrop 1.0.1
+ * FilePondPluginImageCrop 1.0.2
  * Licensed under MIT, https://opensource.org/licenses/MIT
  * Please visit https://pqina.nl/filepond for details.
  */
@@ -45,7 +45,7 @@ const getNumericAspectRatioFromString = aspectRatio => {
  */
 var plugin$1 = _ => {
   const { addFilter, utils } = _;
-  const { Type, loadImage } = utils;
+  const { Type, loadImage, isFile } = utils;
 
   // subscribe to file transformations
   addFilter(
@@ -56,7 +56,7 @@ var plugin$1 = _ => {
         const file = item.file;
 
         // if this is not an image we do not have any business cropping it
-        if (!isImage(file) || !query('GET_ALLOW_IMAGE_CROP')) {
+        if (!isFile(file) || !isImage(file) || !query('GET_ALLOW_IMAGE_CROP')) {
           // continue with the unaltered dataset
           return resolve(item);
         }
