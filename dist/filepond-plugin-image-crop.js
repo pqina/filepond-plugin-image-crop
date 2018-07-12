@@ -1,5 +1,5 @@
 /*
- * FilePondPluginImageCrop 1.0.2
+ * FilePondPluginImageCrop 1.0.3
  * Licensed under MIT, https://opensource.org/licenses/MIT
  * Please visit https://pqina.nl/filepond for details.
  */
@@ -260,37 +260,43 @@
         var url = URL.createObjectURL(file);
 
         // turn the file into an image
-        loadImage(url).then(function(image) {
-          // url is no longer needed
-          URL.revokeObjectURL(url);
+        loadImage(url)
+          .then(function(image) {
+            // url is no longer needed
+            URL.revokeObjectURL(url);
 
-          var width = image.naturalWidth;
-          var height = image.naturalHeight;
+            var width = image.naturalWidth;
+            var height = image.naturalHeight;
 
-          // get exif orientation
-          var orientation = (item.getMetadata('exif') || {}).orientation || -1;
+            // get exif orientation
+            var orientation =
+              (item.getMetadata('exif') || {}).orientation || -1;
 
-          // if is rotated incorrectly swap width and height
-          // this makes sure the container dimensions ar rendered correctly
-          if (orientation >= 5 && orientation <= 8) {
-            var _ref2 = [height, width];
-            width = _ref2[0];
-            height = _ref2[1];
-          }
+            // if is rotated incorrectly swap width and height
+            // this makes sure the container dimensions ar rendered correctly
+            if (orientation >= 5 && orientation <= 8) {
+              var _ref2 = [height, width];
+              width = _ref2[0];
+              height = _ref2[1];
+            }
 
-          // calculate the auto crop rectangle
-          // x, y, width and height relative to image size
-          var cropRect = getAutoCropRect(height / width, cropAspectRatio);
+            // calculate the auto crop rectangle
+            // x, y, width and height relative to image size
+            var cropRect = getAutoCropRect(height / width, cropAspectRatio);
 
-          // store crop rectangle with item
-          item.setMetadata('crop', {
-            rect: cropRect,
-            aspectRatio: cropAspectRatio
+            // store crop rectangle with item
+            item.setMetadata('crop', {
+              rect: cropRect,
+              aspectRatio: cropAspectRatio
+            });
+
+            // done!
+            resolve(item);
+          })
+          .catch(function(e) {
+            // something went wrong when loading the image, probably not supported
+            resolve(item);
           });
-
-          // done!
-          resolve(item);
-        });
       });
     });
 
