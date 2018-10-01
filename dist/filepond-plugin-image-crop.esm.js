@@ -1,51 +1,86 @@
 /*
- * FilePondPluginImageCrop 1.0.3
+ * FilePondPluginImageCrop 2.0.0
  * Licensed under MIT, https://opensource.org/licenses/MIT
  * Please visit https://pqina.nl/filepond for details.
  */
-// test if file is of type image
 const isImage = file => /^image/.test(file.type);
-
-const getAutoCropRect = (originalAspectRatio, targetAspectRatio) => {
-  let x, y, width, height;
-  // if input is portrait and required is landscape
-  if (originalAspectRatio < targetAspectRatio) {
-    // width is portrait width, height is width times outputRatio
-    height = 1;
-    y = 0;
-    width = height / targetAspectRatio * originalAspectRatio;
-    x = (1 - width) * 0.5;
-  } else {
-    // if input is landscape and required is portrait (or is square)
-    // height is landscape height, width is height divided by outputRatio
-    width = 1;
-    x = 0;
-    height = width / originalAspectRatio * targetAspectRatio;
-    y = (1 - height) * 0.5;
-  }
-
-  return {
-    x,
-    y,
-    height,
-    width
-  };
-};
-
-const getNumericAspectRatioFromString = aspectRatio => {
-  if (typeof aspectRatio === 'string') {
-    const [w, h] = aspectRatio.split(':');
-    return h / w;
-  }
-  return aspectRatio;
-};
 
 /**
  * Image Auto Crop Plugin
  */
 var plugin$1 = _ => {
   const { addFilter, utils } = _;
-  const { Type, loadImage, isFile } = utils;
+  const { Type, isFile, getNumericAspectRatioFromString } = utils;
+
+  // tests if crop is allowed on this item
+  const allowCrop = (item, query) =>
+    !(!isImage(item.file) || !query('GET_ALLOW_IMAGE_CROP'));
+
+  const isObject = value => typeof value === 'object';
+
+  const isNumber = value => typeof value === 'number';
+
+  const updateCrop = (item, obj) =>
+    item.setMetadata('crop', Object.assign({}, item.getMetadata('crop'), obj));
+
+  // extend item methods
+  addFilter('DID_CREATE_ITEM', (item, { query }) => {
+    item.extend('setImageCrop', crop => {
+      if (!allowCrop(item, query) || !isObject(center)) return;
+      item.setMetadata('crop', crop);
+      return crop;
+    });
+
+    item.extend('setImageCropCenter', center => {
+      if (!allowCrop(item, query) || !isObject(center)) return;
+      return updateCrop(item, { center });
+    });
+
+    item.extend('setImageCropZoom', zoom => {
+      if (!allowCrop(item, query) || !isNumber(zoom)) return;
+      return updateCrop(item, { zoom: Math.max(1, zoom) });
+    });
+
+    item.extend('setImageCropRotation', rotation => {
+      if (!allowCrop(item, query) || !isNumber(rotation)) return;
+      return updateCrop(item, { rotation });
+    });
+
+    item.extend('setImageCropFlip', flip => {
+      if (!allowCrop(item, query) || !isObject(flip)) return;
+      return updateCrop(item, { flip });
+    });
+
+    item.extend('setImageCropAspectRatio', newAspectRatio => {
+      if (!allowCrop(item, query) || typeof newAspectRatio === 'undefined')
+        return;
+
+      const currentCrop = item.getMetadata('crop');
+
+      const aspectRatio = getNumericAspectRatioFromString(newAspectRatio);
+
+      const newCrop = {
+        center: {
+          x: 0.5,
+          y: 0.5
+        },
+        flip: currentCrop
+          ? Object.assign({}, currentCrop.flip)
+          : {
+              horizontal: false,
+              vertical: false
+            },
+
+        rotation: 0,
+        zoom: 1,
+        aspectRatio
+      };
+
+      item.setMetadata('crop', newCrop);
+
+      return newCrop;
+    });
+  });
 
   // subscribe to file transformations
   addFilter(
@@ -55,62 +90,39 @@ var plugin$1 = _ => {
         // get file reference
         const file = item.file;
 
-        // if this is not an image we do not have any business cropping it
+        // if this is not an image we do not have any business cropping it and we'll continue with the unaltered dataset
         if (!isFile(file) || !isImage(file) || !query('GET_ALLOW_IMAGE_CROP')) {
-          // continue with the unaltered dataset
+          return resolve(item);
+        }
+
+        // already has crop metadata set?
+        const crop = item.getMetadata('crop');
+        if (crop) {
           return resolve(item);
         }
 
         // get the required aspect ratio and exit if it's not set
         const humanAspectRatio = query('GET_IMAGE_CROP_ASPECT_RATIO');
-        if (humanAspectRatio === null) {
-          return resolve(item);
-        }
 
-        // get the required output aspect ratio from the options object
-        const cropAspectRatio = getNumericAspectRatioFromString(
-          humanAspectRatio
-        );
+        // set default crop rectangle
+        item.setMetadata('crop', {
+          center: {
+            x: 0.5,
+            y: 0.5
+          },
+          flip: {
+            horizontal: false,
+            vertical: false
+          },
+          rotation: 0,
+          zoom: 1,
+          aspectRatio: humanAspectRatio
+            ? getNumericAspectRatioFromString(humanAspectRatio)
+            : null
+        });
 
-        // get file url
-        const url = URL.createObjectURL(file);
-
-        // turn the file into an image
-        loadImage(url)
-          .then(image => {
-            // url is no longer needed
-            URL.revokeObjectURL(url);
-
-            let width = image.naturalWidth;
-            let height = image.naturalHeight;
-
-            // get exif orientation
-            const orientation =
-              (item.getMetadata('exif') || {}).orientation || -1;
-
-            // if is rotated incorrectly swap width and height
-            // this makes sure the container dimensions ar rendered correctly
-            if (orientation >= 5 && orientation <= 8) {
-              [width, height] = [height, width];
-            }
-
-            // calculate the auto crop rectangle
-            // x, y, width and height relative to image size
-            const cropRect = getAutoCropRect(height / width, cropAspectRatio);
-
-            // store crop rectangle with item
-            item.setMetadata('crop', {
-              rect: cropRect,
-              aspectRatio: cropAspectRatio
-            });
-
-            // done!
-            resolve(item);
-          })
-          .catch(e => {
-            // something went wrong when loading the image, probably not supported
-            resolve(item);
-          });
+        // we done!
+        resolve(item);
       })
   );
 
@@ -126,8 +138,10 @@ var plugin$1 = _ => {
   };
 };
 
-if (typeof navigator !== 'undefined' && document) {
-  // plugin has loaded
+const isBrowser =
+  typeof window !== 'undefined' && typeof window.document !== 'undefined';
+
+if (isBrowser && document) {
   document.dispatchEvent(
     new CustomEvent('FilePond:pluginloaded', { detail: plugin$1 })
   );
