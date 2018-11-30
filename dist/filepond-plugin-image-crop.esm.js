@@ -3,6 +3,8 @@
  * Licensed under MIT, https://opensource.org/licenses/MIT
  * Please visit https://pqina.nl/filepond for details.
  */
+
+/* eslint-disable */
 const isImage = file => /^image/.test(file.type);
 
 /**
