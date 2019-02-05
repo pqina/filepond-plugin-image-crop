@@ -1,5 +1,5 @@
 /*
- * FilePondPluginImageCrop 2.0.0
+ * FilePondPluginImageCrop 2.0.1
  * Licensed under MIT, https://opensource.org/licenses/MIT
  * Please visit https://pqina.nl/filepond for details.
  */
@@ -143,7 +143,7 @@ var plugin$1 = _ => {
 const isBrowser =
   typeof window !== 'undefined' && typeof window.document !== 'undefined';
 
-if (isBrowser && document) {
+if (isBrowser) {
   document.dispatchEvent(
     new CustomEvent('FilePond:pluginloaded', { detail: plugin$1 })
   );
