@@ -1,17 +1,17 @@
-/*
- * FilePondPluginImageCrop 2.0.1
- * Licensed under MIT, https://opensource.org/licenses/MIT
- * Please visit https://pqina.nl/filepond for details.
+/*!
+ * FilePondPluginImageCrop 2.0.2
+ * Licensed under MIT, https://opensource.org/licenses/MIT/
+ * Please visit https://pqina.nl/filepond/ for details.
  */
 
 /* eslint-disable */
+
 const isImage = file => /^image/.test(file.type);
 
 /**
  * Image Auto Crop Plugin
  */
-var plugin$1 = _ => {
-  const { addFilter, utils } = _;
+const plugin = ({ addFilter, utils }) => {
   const { Type, isFile, getNumericAspectRatioFromString } = utils;
 
   // tests if crop is allowed on this item
@@ -72,7 +72,6 @@ var plugin$1 = _ => {
               horizontal: false,
               vertical: false
             },
-
         rotation: 0,
         zoom: 1,
         aspectRatio
@@ -140,13 +139,13 @@ var plugin$1 = _ => {
   };
 };
 
+// fire pluginloaded event if running in browser, this allows registering the plugin when using async script tags
 const isBrowser =
   typeof window !== 'undefined' && typeof window.document !== 'undefined';
-
 if (isBrowser) {
   document.dispatchEvent(
-    new CustomEvent('FilePond:pluginloaded', { detail: plugin$1 })
+    new CustomEvent('FilePond:pluginloaded', { detail: plugin })
   );
 }
 
-export default plugin$1;
+export default plugin;

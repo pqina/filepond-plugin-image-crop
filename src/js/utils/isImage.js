@@ -1,0 +1,1 @@
+export const isImage = file => /^image/.test(file.type);

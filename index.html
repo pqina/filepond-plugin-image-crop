@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FilePond Plugin Image Crop Demo</title>
+    <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet">
+    <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet">
+</head>
+<body>
+
+    <input type="file" accept="image/jpeg, image/png"/>
+    
+    <script src="./dist/filepond-plugin-image-crop.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
+    <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
+    
+    <script>
+        // Register the plugin with FilePond
+        FilePond.registerPlugin(FilePondPluginImageCrop, FilePondPluginImagePreview);
+
+        // Get a reference to the file input element
+        const inputElement = document.querySelector('input[type="file"]');
+
+        // Create the FilePond instance
+        const pond = FilePond.create(inputElement, {
+            imageCropAspectRatio: '1:1'
+        });
+    </script>
+
+</body>
+</html>
