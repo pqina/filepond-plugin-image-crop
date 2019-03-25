@@ -1,6 +1,6 @@
 {
     "name": "filepond-plugin-image-crop",
-    "version": "2.0.2",
+    "version": "2.0.3",
     "description": "Image Crop Plugin for FilePond",
     "license": "MIT",
     "author": {
@@ -12,6 +12,12 @@
     "main": "dist/filepond-plugin-image-crop.js",
     "browser": "dist/filepond-plugin-image-crop.js",
     "module": "dist/filepond-plugin-image-crop.esm.js",
+    "browserslist": [
+        "last 1 version and not Explorer 10",
+        "Explorer 11",
+        "iOS >= 9",
+        "Android >= 4.4"
+    ],
     "files": [
         "dist"
     ],
