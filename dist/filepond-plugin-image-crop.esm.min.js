@@ -1,5 +1,5 @@
 /*!
- * FilePondPluginImageCrop 2.0.4
+ * FilePondPluginImageCrop 2.0.5
  * Licensed under MIT, https://opensource.org/licenses/MIT/
  * Please visit https://pqina.nl/filepond/ for details.
  */
